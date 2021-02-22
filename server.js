@@ -23,7 +23,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const whitelist = [
 	"http://localhost:3000",
 	"http://localhost:4000",
-	"https://react-game.herokuapp.com",
+	"https://shaxxkh-react-game.herokuapp.com",
 ];
 const corsOptions = {
 	origin: function (origin, callback) {
