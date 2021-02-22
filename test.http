@@ -1,0 +1,6 @@
+POST  http://localhost:4000/Statistics
+Content-Type: application/json
+
+{
+	"hello": "hi"
+}
