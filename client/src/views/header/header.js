@@ -124,7 +124,9 @@ export default class MyHeader extends React.Component {
 							Welcome to Tic-Tac-Toe
 						</h1>
 						<div className="header-buttons">
-							<Button type="primary">2 Players</Button>
+							<Link to="/">
+								<Button type="primary">2 Players</Button>
+							</Link>
 							<Button type="primary">With Computer</Button>
 							<Button type="primary">2 Devices</Button>
 							<Button type="primary">New Game</Button>

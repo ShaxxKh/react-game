@@ -1,27 +1,29 @@
 import { Typography } from "antd";
-import music from "../audio/click.mp3";
+import clickSuccess from "../audio/click.mp3";
 import React from "react";
+import WinAlert from "./winAlert";
+import clickWrong from "../audio/busyCell.mp3";
 
 export default class Board extends React.Component {
 	constructor(props) {
 		super(props);
 		this.state = {
+			mainWin: 0,
+			secondWin: 0,
+			mode: 1,
+			end: 0,
 			turn: 1,
 			firstPlayer: this.firstPlayer,
 			secondPlayer: this.secondPlayer,
-			cells: [],
-			one: 0,
-			two: 0,
-			three: 0,
-			four: 0,
-			five: 0,
-			six: 0,
-			seven: 0,
-			eight: 0,
-			nine: 0,
+			cells: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+			mainPlayerCells: [],
+			secondPlayerCells: [],
 		};
-		this.audio = new Audio(music);
-		this.audio.load();
+		this.clickSuccess = new Audio(clickSuccess);
+		this.clickSuccess.load();
+
+		this.clickWrong = new Audio(clickWrong);
+		this.clickWrong.load();
 
 		this.mainPlayer = localStorage.getItem("tic-tac-toe-main-player");
 		this.secondPlayer = localStorage.getItem("tic-tac-toe-second-player");
@@ -30,132 +32,112 @@ export default class Board extends React.Component {
 	}
 
 	onChooseCell(e) {
-		this.audio.play();
-		this.setState({});
-		if (e.target.textContent === "") {
+		if (e.target.textContent === "" && this.state.end === 0) {
+			this.clickSuccess.play();
+		} else {
+			this.clickWrong.play();
+		}
+		if (e.target.textContent === "" && this.state.end === 0) {
 			if (this.state.turn) {
 				e.target.textContent = "X";
-				if (e.target.id === "1") {
-					this.state.one = 1;
-				}
-				if (e.target.id === "2") {
-					this.state.two = 1;
-				}
-				if (e.target.id === "3") {
-					this.state.three = 1;
-				}
-				if (e.target.id === "4") {
-					this.state.four = 1;
-				}
-				if (e.target.id === "5") {
-					this.state.five = 1;
-				}
-				if (e.target.id === "6") {
-					this.state.six = 1;
-				}
-				if (e.target.id === "7") {
-					this.state.seven = 1;
-				}
-				if (e.target.id === "8") {
-					this.state.eight = 1;
-				}
-				if (e.target.id === "9") {
-					this.state.nine = 1;
+				for (let i = 1; i < 10; i++) {
+					if (e.target.id === i.toString()) {
+						let id = this.state.cells.indexOf(i);
+						this.state.cells.splice(id, 1);
+						this.state.mainPlayerCells.push(i);
+					}
 				}
 			} else {
 				e.target.textContent = "O";
-				if (e.target.id === "1") {
-					this.state.one = 2;
-				}
-				if (e.target.id === "2") {
-					this.state.two = 2;
-				}
-				if (e.target.id === "3") {
-					this.state.three = 2;
-				}
-				if (e.target.id === "4") {
-					this.state.four = 2;
-				}
-				if (e.target.id === "5") {
-					this.state.five = 2;
-				}
-				if (e.target.id === "6") {
-					this.state.six = 2;
-				}
-				if (e.target.id === "7") {
-					this.state.seven = 2;
-				}
-				if (e.target.id === "8") {
-					this.state.eight = 2;
-				}
-				if (e.target.id === "9") {
-					this.state.nine = 2;
+				for (let i = 1; i < 10; i++) {
+					if (e.target.id === i.toString()) {
+						let id = this.state.cells.indexOf(i);
+						this.state.cells.splice(id, 1);
+						this.state.secondPlayerCells.push(i);
+					}
 				}
 			}
 			this.setState({ turn: !this.state.turn });
 		}
-		if (this.checkEndGame()) {
-			console.log("won");
+		if (this.checkEndGame() || this.state.cells.length === 0) {
+			this.state.end = 1;
 		}
 	}
-
-	checkEndGame() {
-		console.log(this.state.one, this.state.two, this.state.three);
+	checkIncludes(first, second, third, cellsToCheck, player) {
 		if (
-			this.state.one === this.state.two &&
-			this.state.one === this.state.three &&
-			this.state.one !== 0
+			cellsToCheck.includes(first) &&
+			cellsToCheck.includes(second) &&
+			cellsToCheck.includes(third)
+		) {
+			if (player === 1) {
+				this.state.mainWin = 1;
+			} else {
+				this.state.secondWin = 1;
+			}
+			return true;
+		} else return false;
+	}
+	checkEndGame() {
+		if (
+			this.checkIncludes(1, 2, 3, this.state.mainPlayerCells, 1) ||
+			this.checkIncludes(1, 2, 3, this.state.secondPlayerCells, 1)
 		) {
 			return true;
 		} else if (
-			this.state.four === this.state.five &&
-			this.state.four === this.state.six &&
-			this.state.four !== 0
+			this.checkIncludes(4, 5, 6, this.state.mainPlayerCells, 1) ||
+			this.checkIncludes(4, 5, 6, this.state.secondPlayerCells, 2)
 		) {
 			return true;
 		} else if (
-			this.state.seven === this.state.eight &&
-			this.state.seven === this.state.nine &&
-			this.state.seven !== 0
+			this.checkIncludes(7, 8, 9, this.state.mainPlayerCells, 1) ||
+			this.checkIncludes(7, 8, 9, this.state.secondPlayerCells, 2)
 		) {
 			return true;
 		} else if (
-			this.state.one === this.state.four &&
-			this.state.one === this.state.seven &&
-			this.state.one !== 0
+			this.checkIncludes(1, 4, 7, this.state.mainPlayerCells, 1) ||
+			this.checkIncludes(1, 4, 7, this.state.secondPlayerCells, 2)
 		) {
 			return true;
 		} else if (
-			this.state.two === this.state.five &&
-			this.state.two === this.state.eight &&
-			this.state.two !== 0
+			this.checkIncludes(2, 5, 8, this.state.mainPlayerCells, 1) ||
+			this.checkIncludes(2, 5, 8, this.state.secondPlayerCells, 2)
 		) {
 			return true;
 		} else if (
-			this.state.three === this.state.six &&
-			this.state.three === this.state.nine &&
-			this.state.three !== 0
+			this.checkIncludes(3, 6, 9, this.state.mainPlayerCells, 1) ||
+			this.checkIncludes(3, 6, 9, this.state.secondPlayerCells, 2)
 		) {
 			return true;
 		} else if (
-			this.state.one === this.state.five &&
-			this.state.one === this.state.nine &&
-			this.state.one !== 0
+			this.checkIncludes(1, 5, 9, this.state.mainPlayerCells, 1) ||
+			this.checkIncludes(1, 5, 9, this.state.secondPlayerCells, 2)
 		) {
 			return true;
 		} else if (
-			this.state.three === this.state.five &&
-			this.state.three === this.state.seven &&
-			this.state.three !== 0
+			this.checkIncludes(3, 5, 7, this.state.mainPlayerCells, 1) ||
+			this.checkIncludes(3, 5, 7, this.state.secondPlayerCells, 2)
 		) {
 			return true;
 		}
 		return false;
 	}
+	showEndGameAlert() {
+		if (this.state.end) {
+			if (this.state.mainWin) {
+				return <WinAlert won={this.mainPlayer} />;
+			} else if (this.state.secondWin) {
+				return <WinAlert won={this.secondPlayer} />;
+			} else {
+				return <WinAlert won="Nobody" />;
+			}
+		}
+	}
 
 	render() {
 		return (
 			<>
+				{this.showEndGameAlert()}
+
 				<h1>
 					It is {this.state.turn ? this.mainPlayer : this.secondPlayer}'s turn
 				</h1>
