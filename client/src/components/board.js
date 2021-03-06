@@ -1,10 +1,12 @@
 import React from "react";
+import { withRouter } from "react-router-dom";
 
-export default class Board extends React.Component {
+class Board extends React.Component {
 	constructor(props) {
 		super(props);
-
-		if (this.props.mainPlayer === null || this.props.secondPlayer === null) {
+		this.mainPlayer = localStorage.getItem("tic-tac-toe-main-player");
+		this.secondPlayer = localStorage.getItem("tic-tac-toe-second-player");
+		if (this.mainPlayer === null || this.secondPlayer === null) {
 			this.props.history.push("/");
 		}
 	}
@@ -36,3 +38,5 @@ export default class Board extends React.Component {
 		);
 	}
 }
+
+export default withRouter(Board);
