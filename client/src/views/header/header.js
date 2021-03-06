@@ -2,22 +2,10 @@ import React from "react";
 import "./header.css";
 import { Link } from "react-router-dom";
 import music from "../../audio/main.mp3";
-import {
-	Menu,
-	Button,
-	notification,
-	Switch,
-	Slider,
-	InputNumber,
-	Row,
-	Col,
-} from "antd";
+import { Button, notification, Slider, Row, Col } from "antd";
 import {
 	MenuUnfoldOutlined,
 	MenuFoldOutlined,
-	PieChartOutlined,
-	DesktopOutlined,
-	ContainerOutlined,
 	LeftSquareOutlined,
 } from "@ant-design/icons";
 
@@ -28,6 +16,7 @@ export default class MyHeader extends React.Component {
 			volume: 1,
 			inputValue: 1,
 			collapsed: false,
+			soundVolume: 1,
 		};
 
 		this.args = {
@@ -62,9 +51,10 @@ export default class MyHeader extends React.Component {
 	leaveGame() {
 		localStorage.removeItem("tic-tac-toe-main-player");
 		localStorage.removeItem("tic-tac-toe-second-player");
+		this.props.resetState();
 	}
 
-	onChange = (value) => {
+	onChangeMusicVolume = (value) => {
 		if (isNaN(value)) {
 			return;
 		}
@@ -90,15 +80,6 @@ export default class MyHeader extends React.Component {
 			<div>
 				<div className="header">
 					<div style={{ width: 300 }}>
-						<Button
-							type="primary"
-							onClick={this.toggleCollapsed}
-							style={{ marginBottom: 16 }}
-						>
-							{React.createElement(
-								this.state.collapsed ? MenuUnfoldOutlined : MenuFoldOutlined
-							)}
-						</Button>
 						<div>
 							<div>
 								{" "}
@@ -108,8 +89,27 @@ export default class MyHeader extends React.Component {
 										<Slider
 											min={0}
 											max={1}
-											onChange={this.onChange}
+											onChange={this.onChangeMusicVolume}
 											value={typeof inputValue === "number" ? inputValue : 0}
+											step={0.01}
+										/>
+									</Col>
+								</Row>
+							</div>
+							<div>
+								{" "}
+								Sounds
+								<Row style={{ lineHeight: "0px" }}>
+									<Col span={12}>
+										<Slider
+											min={0}
+											max={1}
+											onChange={this.props.onChangeSoundVolume}
+											value={
+												typeof this.props.soundVolume === "number"
+													? this.props.soundVolume
+													: 0
+											}
 											step={0.01}
 										/>
 									</Col>
@@ -124,13 +124,17 @@ export default class MyHeader extends React.Component {
 							Welcome to Tic-Tac-Toe
 						</h1>
 						<div className="header-buttons">
-							<Link to="/">
-								<Button type="primary">2 Players</Button>
-							</Link>
+							<Button onClick={this.props.resetState} type="primary">
+								2 Players
+							</Button>
 							<Button type="primary">With Computer</Button>
 							<Button type="primary">2 Devices</Button>
-							<Button type="primary">New Game</Button>
-							<Button type="primary">Save Game</Button>
+							<Button onClick={this.props.resetState} type="primary">
+								New Game
+							</Button>
+							<Button onClick={this.props.saveGame} type="primary">
+								Save Game
+							</Button>
 						</div>
 					</div>
 					<Link to="/">

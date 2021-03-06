@@ -7,9 +7,10 @@ const session = require("express-session");
 const bodyParser = require("body-parser");
 const app = express();
 const path = require("path");
+const Winner = require("./models/winner");
 
 mongoose.connect(
-	"mongodb+srv://ShaXx:14321432@cluster0.xldkl.mongodb.net/React-game",
+	"mongodb+srv://ShaXx:14321432@react-game.bkc5b.mongodb.net/Statistics",
 	{
 		useNewUrlParser: true,
 		useUnifiedTopology: true,
@@ -53,7 +54,14 @@ app.use(
 
 app.use(cookieParser("secretcode"));
 
-app.post("/statistics", (req, res) => {
+app.post("/saveWinner", async (req, res) => {
+	const newWinner = Winner({
+		username: req.body.username,
+		opponent: req.body.opponent,
+		mode: req.body.mode,
+	});
+	await newWinner.save();
+	res.send("User Created");
 	console.log(req.body);
 	res.send(req.body);
 });

@@ -11,6 +11,7 @@ export default class WinAlert extends React.Component {
 	retry() {
 		localStorage.removeItem("tic-tac-toe-main-player");
 		localStorage.removeItem("tic-tac-toe-second-player");
+		this.props.resetState();
 	}
 	render() {
 		return (
@@ -21,11 +22,13 @@ export default class WinAlert extends React.Component {
 					type="info"
 					action={
 						<Space direction="vertical">
-							<Link to="/">
-								<Button size="small" type="primary">
-									New Game
-								</Button>
-							</Link>
+							<Button
+								onClick={this.props.resetState}
+								size="small"
+								type="primary"
+							>
+								New Game
+							</Button>
 
 							<Button onClick={this.retry} size="small" danger type="ghost">
 								<Link to="/">Leave Game</Link>
