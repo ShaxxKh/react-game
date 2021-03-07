@@ -183,7 +183,7 @@ class App extends React.Component {
 			}
 		}
 	};
-	saveWinner() {
+	saveWinner(e) {
 		let winner = this.mainPlayer;
 		let opponent = this.secondPlayer;
 		if (this.state.secondWin) {
@@ -195,12 +195,9 @@ class App extends React.Component {
 			opponent: opponent,
 			mode: this.state.mode,
 		};
-		axios({
-			method: "POST",
-			data: winnerData,
-			withCredentials: true,
-			url: "/saveWinner",
-		})
+		axios
+			.post("/saveWinner", winnerData)
+
 			.then(() => {
 				console.log(winnerData);
 			})
