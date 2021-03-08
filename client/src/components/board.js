@@ -1,5 +1,6 @@
 import React from "react";
 import { withRouter } from "react-router-dom";
+import "./content.css";
 
 class Board extends React.Component {
 	constructor(props) {

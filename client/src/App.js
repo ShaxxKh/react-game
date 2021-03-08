@@ -1,17 +1,21 @@
 import "antd/dist/antd.css";
 import React from "react";
 import { Route, Switch } from "react-router";
-import MainGame from "./components/mainGame";
 import RegisterPage from "./views/register";
 import MyHeader from "./views/header/header";
 import MyFooter from "./views/footer/footer";
 import Board from "./components/board";
 import WinAlert from "./components/winAlert";
-import axios from "axios";
 import clickSuccess from "./audio/click.mp3";
 import clickWrong from "./audio/busyCell.mp3";
+import music from "./audio/main.mp3";
+import StatisticsPage from "./components/statisticsPage";
+import { withRouter } from "react-router-dom";
+import Hotkeys from "react-hot-keys";
+import HotKeysPage from "./components/hotKeysPage";
+import "./App.css";
 
-import { Layout } from "antd";
+import { Layout, notification } from "antd";
 const { Content } = Layout;
 
 class App extends React.Component {
@@ -42,6 +46,17 @@ class App extends React.Component {
 			mainPlayerCells: [],
 			secondPlayerCells: [],
 			soundVolume: 1,
+			musicVolume: 1,
+		};
+
+		this.args = {
+			message: "Notification Title",
+			description:
+				"Close this to unmute the music. You can mute it later in the menu on the left.",
+			duration: 0,
+			onClose: () => {
+				this.music.play();
+			},
 		};
 
 		this.clickSuccess = new Audio(clickSuccess);
@@ -49,6 +64,10 @@ class App extends React.Component {
 
 		this.clickWrong = new Audio(clickWrong);
 		this.clickWrong.load();
+
+		this.music = new Audio(music);
+		this.music.loop = true;
+		this.music.load();
 
 		this.onChooseCell = this.onChooseCell.bind(this);
 		this.checkEndGame = this.checkEndGame.bind(this);
@@ -58,17 +77,34 @@ class App extends React.Component {
 		this.onChangeSoundVolume = this.onChangeSoundVolume.bind(this);
 		this.saveGame = this.saveGame.bind(this);
 		this.onUnload = this.onUnload.bind(this);
+		this.bestCell = this.bestCell.bind(this);
+		this.minimax = this.minimax.bind(this);
+		this.leaveGame = this.leaveGame.bind(this);
+		this.login = this.login.bind(this);
+		this.newGame = this.newGame.bind(this);
 	}
 	async onUnload(e) {
 		e.preventDefault();
+		this.setState({
+			mainPlayer: localStorage.getItem("tic-tac-toe-main-player"),
+			secondPlayer: localStorage.getItem("tic-tac-toe-second-player"),
+		});
 		await localStorage.setItem("last-game", JSON.stringify(this.state));
-		console.log("asd");
 	}
 	componentDidMount() {
+		notification.open(this.args);
 		window.onbeforeunload = (e) => {
 			this.onUnload(e);
 			return undefined;
 		};
+	}
+	toggleMusic(checked) {
+		if (checked) {
+			this.music.play();
+		} else {
+			this.music.pause();
+		}
+		notification.destroy();
 	}
 	onChooseCell(e) {
 		if (e.target.textContent === "" && this.state.end === 0) {
@@ -89,6 +125,14 @@ class App extends React.Component {
 						this.state.mainPlayerCells.push(i);
 					}
 				}
+				if (
+					(this.checkEndGame(this.state.mainPlayerCells, this.mainPlayer) ||
+						this.state.cells.length === 0) &&
+					this.state.end === 0
+				) {
+					this.setState({ end: 1 });
+					this.saveWinner();
+				}
 			} else {
 				for (let i = 1; i < 10; i++) {
 					if (e.target.id === i.toString()) {
@@ -101,15 +145,16 @@ class App extends React.Component {
 						this.state.secondPlayerCells.push(i);
 					}
 				}
+				if (
+					(this.checkEndGame(this.state.secondPlayerCells, this.secondPlayer) ||
+						this.state.cells.length === 0) &&
+					this.state.end === 0
+				) {
+					this.setState({ end: 1 });
+					this.saveWinner();
+				}
 			}
 			this.setState({ turn: !this.state.turn });
-		}
-		if (
-			(this.checkEndGame() || this.state.cells.length === 0) &&
-			this.state.end === 0
-		) {
-			this.setState({ end: 1 });
-			this.saveWinner();
 		}
 	}
 	checkIncludes(first, second, third, cellsToCheck, player) {
@@ -126,46 +171,22 @@ class App extends React.Component {
 			return true;
 		} else return false;
 	}
-	checkEndGame() {
-		if (
-			this.checkIncludes(1, 2, 3, this.state.mainPlayerCells, 1) ||
-			this.checkIncludes(1, 2, 3, this.state.secondPlayerCells, 1)
-		) {
+	checkEndGame(playerCells, player) {
+		if (this.checkIncludes(1, 2, 3, playerCells, 1)) {
 			return true;
-		} else if (
-			this.checkIncludes(4, 5, 6, this.state.mainPlayerCells, 1) ||
-			this.checkIncludes(4, 5, 6, this.state.secondPlayerCells, 2)
-		) {
+		} else if (this.checkIncludes(4, 5, 6, playerCells, 1)) {
 			return true;
-		} else if (
-			this.checkIncludes(7, 8, 9, this.state.mainPlayerCells, 1) ||
-			this.checkIncludes(7, 8, 9, this.state.secondPlayerCells, 2)
-		) {
+		} else if (this.checkIncludes(7, 8, 9, playerCells, 1)) {
 			return true;
-		} else if (
-			this.checkIncludes(1, 4, 7, this.state.mainPlayerCells, 1) ||
-			this.checkIncludes(1, 4, 7, this.state.secondPlayerCells, 2)
-		) {
+		} else if (this.checkIncludes(1, 4, 7, playerCells, 1)) {
 			return true;
-		} else if (
-			this.checkIncludes(2, 5, 8, this.state.mainPlayerCells, 1) ||
-			this.checkIncludes(2, 5, 8, this.state.secondPlayerCells, 2)
-		) {
+		} else if (this.checkIncludes(2, 5, 8, playerCells, 1)) {
 			return true;
-		} else if (
-			this.checkIncludes(3, 6, 9, this.state.mainPlayerCells, 1) ||
-			this.checkIncludes(3, 6, 9, this.state.secondPlayerCells, 2)
-		) {
+		} else if (this.checkIncludes(3, 6, 9, playerCells, 1)) {
 			return true;
-		} else if (
-			this.checkIncludes(1, 5, 9, this.state.mainPlayerCells, 1) ||
-			this.checkIncludes(1, 5, 9, this.state.secondPlayerCells, 2)
-		) {
+		} else if (this.checkIncludes(1, 5, 9, playerCells, 1)) {
 			return true;
-		} else if (
-			this.checkIncludes(3, 5, 7, this.state.mainPlayerCells, 1) ||
-			this.checkIncludes(3, 5, 7, this.state.secondPlayerCells, 2)
-		) {
+		} else if (this.checkIncludes(3, 5, 7, playerCells, 1)) {
 			return true;
 		}
 		return false;
@@ -184,29 +205,32 @@ class App extends React.Component {
 		}
 	};
 	saveWinner(e) {
-		let winner = this.mainPlayer;
-		let opponent = this.secondPlayer;
+		let winner = localStorage.getItem("tic-tac-toe-main-player");
+		let opponent = localStorage.getItem("tic-tac-toe-second-player");
 		if (this.state.secondWin) {
-			winner = this.secondPlayer;
-			opponent = this.mainPlayer;
+			winner = localStorage.getItem("tic-tac-toe-second-player");
+			opponent = localStorage.getItem("tic-tac-toe-main-player");
 		}
 		let winnerData = {
 			username: winner,
 			opponent: opponent,
 			mode: this.state.mode,
 		};
-		axios
-			.post("/saveWinner", winnerData)
+		const winners = JSON.parse(localStorage.getItem("winners")) || [];
+		winners.push(winnerData);
+		localStorage.setItem("winners", JSON.stringify(winners));
+		// axios
+		// 	.post("/saveWinner", winnerData)
 
-			.then(() => {
-				console.log(winnerData);
-			})
-			.catch(() => {
-				throw new Error("Error with server");
-			});
+		// 	.then(() => {
+		// 		console.log(winnerData);
+		// 	})
+		// 	.catch(() => {
+		// 		throw new Error("Error with server");
+		// 	});
 	}
 	findTurn() {
-		return this.state.turn ? this.mainPlayer : this.secondPlayer;
+		return this.state.turn ? this.state.mainPlayer : this.state.secondPlayer;
 	}
 	resetState() {
 		// this.setState(JSON.parse(JSON.stringify(initialState)));
@@ -227,12 +251,27 @@ class App extends React.Component {
 				{ content: "", id: 8 },
 				{ content: "", id: 9 },
 			],
+			mainPlayer: localStorage.getItem("tic-tac-toe-main-player"),
+			secondPlayer: localStorage.getItem("tic-tac-toe-second-player"),
 			cells: [1, 2, 3, 4, 5, 6, 7, 8, 9],
 			mainPlayerCells: [],
 			secondPlayerCells: [],
 			soundVolume: 1,
 		});
 	}
+	newGame() {
+		this.resetState();
+		this.props.history.push("/2players");
+	}
+	onChangeMusicVolume = (value) => {
+		if (isNaN(value)) {
+			return;
+		}
+		this.setState({
+			musicVolume: value,
+		});
+		this.music.volume = value;
+	};
 	onChangeSoundVolume(value) {
 		if (isNaN(value)) {
 			return;
@@ -247,20 +286,147 @@ class App extends React.Component {
 		gamesContainer.push(this.state);
 		localStorage.setItem("gamesContainer", JSON.stringify(gamesContainer));
 	}
+	bestCell() {
+		if (this.minimax(this.state.cells, this.secondPlayer, 2) !== undefined) {
+			return this.minimax(this.state.cells, this.secondPlayer, 2).index;
+		}
+	}
+	minimax(newBoard, player, id) {
+		let emptyCells = this.state.cells;
+
+		if (this.checkEndGame(this.state.mainPlayerCells)) {
+			return { score: -10 };
+		} else if (this.checkEndGame(this.state.secondPlayerCells)) {
+			return { score: 20 };
+		} else if (emptyCells.length === 0) {
+			return { score: 0 };
+		}
+
+		let moves = [];
+
+		for (let i = 0; i < emptyCells.length; i++) {
+			console.log(emptyCells);
+			let move = {};
+			move.index = emptyCells[i];
+
+			if (id === 2) {
+				this.state.secondPlayerCells.push(emptyCells[i]);
+			} else if (id === 1) {
+				this.state.mainPlayerCells.push(emptyCells[i]);
+			}
+			let removedItem = emptyCells.splice(i, 1);
+			console.log(this.state.secondPlayerCells);
+
+			if (player === this.secondPlayer) {
+				let result = this.minimax(emptyCells, this.mainPlayer, 1);
+				if (result !== undefined) {
+					move.score = result.score;
+				}
+			} else {
+				let result = this.minimax(emptyCells, this.secondPlayer, 2);
+				if (result !== undefined) {
+					move.score = result.score;
+				}
+			}
+
+			if (id === 2) {
+				this.state.secondPlayerCells.splice(-1, 1);
+			} else if (id === 1) {
+				this.state.mainPlayerCells.splice(-1, 1);
+			}
+		}
+
+		let bestMove;
+		if (player === this.secondPlayer) {
+			let bestScore = -10000;
+			for (let i = 0; i < moves.length; i++) {
+				if (moves[i].score > bestScore) {
+					bestScore = moves[i].score;
+					bestMove = i;
+				}
+			}
+		} else {
+			let bestScore = 10000;
+			for (let i = 0; i < moves.length; i++) {
+				if (moves[i].score < bestScore) {
+					bestScore = moves[i].score;
+					bestMove = i;
+				}
+			}
+		}
+		console.log(moves[bestMove]);
+		return moves[bestMove];
+	}
+	leaveGame() {
+		localStorage.removeItem("tic-tac-toe-main-player");
+		localStorage.removeItem("tic-tac-toe-second-player");
+		localStorage.removeItem("last-game");
+		this.setState({ mainPlayer: null, secondPlayer: null });
+		this.resetState();
+		this.props.history.push("/");
+	}
+	login() {
+		this.setState({
+			mainPlayer: localStorage.getItem("tic-tac-toe-main-player"),
+			secondPlayer: localStorage.getItem("tic-tac-toe-second-player"),
+		});
+	}
+	onFinish = (values) => {
+		this.setState({
+			mainPlayer: values.mainPlayer,
+			secondPlayer: values.secondPlayer,
+		});
+		localStorage.setItem("tic-tac-toe-main-player", values.mainPlayer);
+		localStorage.setItem("tic-tac-toe-second-player", values.secondPlayer);
+		this.props.history.push("/2players");
+	};
+	onKeyR(keyName, e, handle) {
+		console.log(e);
+		if (e.shiftKey && e.key === "R") {
+			this.newGame();
+		} else if (e.shiftKey && e.key === "Q") {
+			this.leaveGame();
+		} else if (e.shiftKey && e.key === "ArrowUp") {
+			this.setState({ musicVolume: this.state.musicVolume + 0.05 });
+		} else if (e.shiftKey && e.key === "ArrowDown") {
+			this.setState({ musicVolume: this.state.musicVolume - 0.05 });
+		} else if (e.ctrlKey && e.key === "ArrowUp") {
+			this.setState({ soundVolume: this.state.soundVolume + 0.05 });
+		} else if (e.ctrlKey && e.key === "ArrowDown") {
+			this.setState({ soundVolume: this.state.soundVolume - 0.05 });
+		}
+	}
 
 	render() {
 		return (
 			<>
-				<Layout>
+				<Hotkeys
+					keyName="shift+r,shift+q,shift+up,shift+down,ctrl+up,ctrl+down"
+					onKeyUp={this.onKeyR.bind(this)}
+				></Hotkeys>
+				<Layout className="layout">
 					<MyHeader
-						{...this.state}
+						musicVolume={this.state.musicVolume}
+						soundVolume={this.state.soundVolume}
+						mainPlayer={this.state.mainPlayer}
+						secondPlayer={this.state.secondPlayer}
 						resetState={this.resetState}
+						newGame={this.newGame}
+						onChangeMusicVolume={this.onChangeMusicVolume}
 						onChangeSoundVolume={this.onChangeSoundVolume}
 						saveGame={this.saveGame}
+						leaveGame={this.leaveGame}
 					/>
-					<Content>
+					<Content className="content">
 						<Switch>
-							<Route exact path="/" component={RegisterPage} />
+							<Route exact path="/">
+								<RegisterPage
+									mainPlayer={this.state.mainPlayer}
+									secondPlayer={this.state.secondPlayer}
+									login={this.login}
+									onFinish={this.onFinish}
+								/>
+							</Route>
 							<Route path="/2players">
 								<Board
 									{...this.state}
@@ -268,8 +434,11 @@ class App extends React.Component {
 									onChooseCell={this.onChooseCell}
 									showEndGameAlert={this.showEndGameAlert}
 									findTurn={this.findTurn}
+									bestCell={this.bestCell}
 								/>
 							</Route>
+							<Route exact path="/statistics" component={StatisticsPage} />
+							<Route exact path="/hotKeys" component={HotKeysPage} />
 						</Switch>
 					</Content>
 					<MyFooter />
@@ -279,4 +448,4 @@ class App extends React.Component {
 	}
 }
 
-export default App;
+export default withRouter(App);

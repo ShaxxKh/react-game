@@ -1,6 +1,9 @@
 .header {
 	display: flex;
 	justify-content: space-between;
+	margin: 20px;
+	border-bottom: 2px solid gray;
+	padding-bottom: 30px;
 }
 .heading {
 	text-align: center;
@@ -13,4 +16,16 @@
 	justify-content: center;
 	flex-wrap: wrap;
 	width: 70%;
+}
+.settings {
+	width: 25%;
+}
+.menuButtons {
+	width: 50%;
+}
+.leaveButtonP {
+	width: 25%;
+}
+.leaveLink {
+	float: right;
 }

@@ -38,7 +38,12 @@ const corsOptions = {
 		}
 	},
 };
-app.use(cors(corsOptions));
+app.use(
+	cors({
+		origin: "http://localhost:3000",
+		credentials: true,
+	})
+);
 app.use(
 	session({
 		secret: "secretcode",
@@ -60,8 +65,6 @@ app.post("/saveWinner", async (req, res) => {
 	} catch {
 		throw new Error("Couldn't save");
 	}
-
-	res.send("User Created");
 	console.log(req.body);
 	res.send(req.body);
 });
