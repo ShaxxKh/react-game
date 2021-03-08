@@ -81,7 +81,7 @@ export default class MyHeader extends React.Component {
 					</div>
 				</div>
 				<div className="leaveButton">
-					<Link to="/">
+					<Link className="leaveLink" to="/">
 						<Button
 							onClick={this.props.leaveGame}
 							icon={<LeftSquareOutlined />}
