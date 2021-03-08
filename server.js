@@ -60,8 +60,11 @@ app.post("/saveWinner", async (req, res) => {
 		opponent: req.body.opponent,
 		mode: req.body.mode,
 	});
-	await newWinner.save();
-	res.send("User Created");
+	try {
+		await newWinner.save();
+	} catch {
+		throw new Error("Couldn't save");
+	}
 	console.log(req.body);
 	res.send(req.body);
 });

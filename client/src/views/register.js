@@ -1,12 +1,13 @@
 import React from "react";
 import { Form, Input, Button } from "antd";
+import { Link, withRouter } from "react-router-dom";
 
 const layout = {
 	labelCol: {
 		span: 8,
 	},
 	wrapperCol: {
-		span: 16,
+		span: 10,
 	},
 };
 const tailLayout = {
@@ -28,11 +29,6 @@ class RegisterPage extends React.Component {
 			this.props.history.push("/2players");
 		}
 	}
-	onFinish = (values) => {
-		localStorage.setItem("tic-tac-toe-main-player", values.mainPlayer);
-		localStorage.setItem("tic-tac-toe-second-player", values.secondPlayer);
-		this.props.history.push("/2players");
-	};
 
 	onFinishFailed = (errorInfo) => {
 		console.log("Failed:", errorInfo);
@@ -45,8 +41,9 @@ class RegisterPage extends React.Component {
 				initialValues={{
 					remember: true,
 				}}
-				onFinish={this.onFinish}
+				onFinish={this.props.onFinish}
 				onFinishFailed={this.onFinishFailed}
+				style={{ width: "100%" }}
 			>
 				<Form.Item
 					label="Main Player"
@@ -74,7 +71,7 @@ class RegisterPage extends React.Component {
 				</Form.Item>
 
 				<Form.Item {...tailLayout}>
-					<Button type="primary" htmlType="submit">
+					<Button onClick={this.props.login} type="primary" htmlType="submit">
 						Continue
 					</Button>
 				</Form.Item>
@@ -83,4 +80,4 @@ class RegisterPage extends React.Component {
 	}
 }
 
-export default RegisterPage;
+export default withRouter(RegisterPage);
