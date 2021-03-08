@@ -126,7 +126,7 @@ class App extends React.Component {
 					}
 				}
 				if (
-					(this.checkEndGame(this.state.mainPlayerCells, this.mainPlayer) ||
+					(this.checkEndGame(this.state.mainPlayerCells, 1) ||
 						this.state.cells.length === 0) &&
 					this.state.end === 0
 				) {
@@ -146,7 +146,7 @@ class App extends React.Component {
 					}
 				}
 				if (
-					(this.checkEndGame(this.state.secondPlayerCells, this.secondPlayer) ||
+					(this.checkEndGame(this.state.secondPlayerCells, 2) ||
 						this.state.cells.length === 0) &&
 					this.state.end === 0
 				) {
@@ -163,30 +163,31 @@ class App extends React.Component {
 			cellsToCheck.includes(second) &&
 			cellsToCheck.includes(third)
 		) {
+			console.log(player);
 			if (player === 1) {
-				this.setState({ mainWin: 1 });
+				this.state.mainWin = 1;
 			} else {
-				this.setState({ secondWin: 1 });
+				this.state.secondWin = 1;
 			}
 			return true;
 		} else return false;
 	}
 	checkEndGame(playerCells, player) {
-		if (this.checkIncludes(1, 2, 3, playerCells, 1)) {
+		if (this.checkIncludes(1, 2, 3, playerCells, player)) {
 			return true;
-		} else if (this.checkIncludes(4, 5, 6, playerCells, 1)) {
+		} else if (this.checkIncludes(4, 5, 6, playerCells, player)) {
 			return true;
-		} else if (this.checkIncludes(7, 8, 9, playerCells, 1)) {
+		} else if (this.checkIncludes(7, 8, 9, playerCells, player)) {
 			return true;
-		} else if (this.checkIncludes(1, 4, 7, playerCells, 1)) {
+		} else if (this.checkIncludes(1, 4, 7, playerCells, player)) {
 			return true;
-		} else if (this.checkIncludes(2, 5, 8, playerCells, 1)) {
+		} else if (this.checkIncludes(2, 5, 8, playerCells, player)) {
 			return true;
-		} else if (this.checkIncludes(3, 6, 9, playerCells, 1)) {
+		} else if (this.checkIncludes(3, 6, 9, playerCells, player)) {
 			return true;
-		} else if (this.checkIncludes(1, 5, 9, playerCells, 1)) {
+		} else if (this.checkIncludes(1, 5, 9, playerCells, player)) {
 			return true;
-		} else if (this.checkIncludes(3, 5, 7, playerCells, 1)) {
+		} else if (this.checkIncludes(3, 5, 7, playerCells, player)) {
 			return true;
 		}
 		return false;
@@ -194,10 +195,15 @@ class App extends React.Component {
 	showEndGameAlert = () => {
 		if (this.state.end) {
 			if (this.state.mainWin) {
-				return <WinAlert resetState={this.resetState} won={this.mainPlayer} />;
+				return (
+					<WinAlert resetState={this.resetState} won={this.state.mainPlayer} />
+				);
 			} else if (this.state.secondWin) {
 				return (
-					<WinAlert resetState={this.resetState} won={this.secondPlayer} />
+					<WinAlert
+						resetState={this.resetState}
+						won={this.state.secondPlayer}
+					/>
 				);
 			} else {
 				return <WinAlert resetState={this.resetState} won="Nobody" />;
@@ -216,6 +222,7 @@ class App extends React.Component {
 			opponent: opponent,
 			mode: this.state.mode,
 		};
+		console.log(winnerData, this.state.secondWin, this.state.mainWin);
 		const winners = JSON.parse(localStorage.getItem("winners")) || [];
 		winners.push(winnerData);
 		localStorage.setItem("winners", JSON.stringify(winners));
